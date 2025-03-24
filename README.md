@@ -1,6 +1,21 @@
 local player = game:GetService("Players").LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- Tạo hoặc lấy Object để lưu dữ liệu
+local dataFolder = game.Workspace:FindFirstChild("PlayerData")
+if not dataFolder then
+    dataFolder = Instance.new("Folder")
+    dataFolder.Name = "PlayerData"
+    dataFolder.Parent = game.Workspace
+end
+
+local playerData = dataFolder:FindFirstChild(player.Name)
+if not playerData then
+    playerData = Instance.new("StringValue")
+    playerData.Name = player.Name
+    playerData.Parent = dataFolder
+end
+
 -- Ẩn một phần tên
 local function hideName(name)
     local visibleLength = math.max(3, math.floor(#name * 0.5))
@@ -8,21 +23,21 @@ local function hideName(name)
     return string.sub(name, 1, visibleLength) .. hiddenPart
 end
 
--- Tạo GUI chính
+-- Tạo GUI
 local nameHub = Instance.new("ScreenGui")
 nameHub.Name = "NameHub"
 nameHub.Parent = playerGui
 
 local mainFrame = Instance.new("Frame")
 mainFrame.Parent = nameHub
-mainFrame.Size = UDim2.new(0.3, 0, 0.1, 0) -- Nhỏ gọn hơn
-mainFrame.Position = UDim2.new(0.5, 0, 0.1, 0) -- Đặt lên cao hơn
+mainFrame.Size = UDim2.new(0.3, 0, 0.1, 0)
+mainFrame.Position = UDim2.new(0.5, 0, 0.1, 0)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BackgroundTransparency = 0.2
 mainFrame.BorderSizePixel = 0
 mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-mainFrame.Active = true -- Cho phép kéo
-mainFrame.Draggable = true -- Kéo thả được
+mainFrame.Active = true
+mainFrame.Draggable = true
 
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0.15, 0)
@@ -37,7 +52,7 @@ nameLabel.BackgroundTransparency = 1
 nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 nameLabel.TextScaled = true
 nameLabel.Font = Enum.Font.GothamBold
-nameLabel.Text = "👤 Tên :" .. hideName(player.Name) .. ""
+nameLabel.Text = "👤 Tên : " .. hideName(player.Name)
 
 -- Khung hiển thị đơn
 local jobFrame = Instance.new("Frame")
@@ -70,9 +85,10 @@ jobBox.Text = ""
 jobBox.ClearTextOnFocus = false
 jobBox.TextWrapped = true
 
--- Khi nhấn Enter, cập nhật nội dung nhưng giữ nguyên chữ "Đơn:"
+-- Khi nhấn Enter, lưu vào Workspace
 jobBox.FocusLost:Connect(function(enterPressed)
     if enterPressed and jobBox.Text ~= "" then
-        jobBox.Text = jobBox.Text -- Cập nhật nội dung
+        playerData.Value = jobBox.Text  -- Lưu vào StringValue trong Workspace
+        print("✅ Đã lưu đơn vào Workspace:", playerData.Value)
     end
 end)
