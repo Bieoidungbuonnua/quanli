@@ -1,27 +1,24 @@
 local player = game:GetService("Players").LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Tạo hoặc lấy Object để lưu dữ liệu
-local dataFolder = game.Workspace:FindFirstChild("PlayerData")
-if not dataFolder then
-    dataFolder = Instance.new("Folder")
-    dataFolder.Name = "PlayerData"
-    dataFolder.Parent = game.Workspace
+-- Tên giá trị lưu trong Workspace
+local workspaceValueName = "SavedData_" .. player.Name
+
+-- Tạo hoặc lấy giá trị trong Workspace
+local function getOrCreateValue()
+    local existingValue = game.Workspace:FindFirstChild(workspaceValueName)
+    if existingValue then
+        return existingValue
+    else
+        local newValue = Instance.new("StringValue")
+        newValue.Name = workspaceValueName
+        newValue.Parent = game.Workspace
+        newValue.Value = ""
+        return newValue
+    end
 end
 
-local playerData = dataFolder:FindFirstChild(player.Name)
-if not playerData then
-    playerData = Instance.new("StringValue")
-    playerData.Name = player.Name
-    playerData.Parent = dataFolder
-end
-
--- Ẩn một phần tên
-local function hideName(name)
-    local visibleLength = math.max(3, math.floor(#name * 0.5))
-    local hiddenPart = string.rep("*", #name - visibleLength)
-    return string.sub(name, 1, visibleLength) .. hiddenPart
-end
+local savedData = getOrCreateValue()
 
 -- Tạo GUI
 local nameHub = Instance.new("ScreenGui")
@@ -43,7 +40,7 @@ local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0.15, 0)
 uiCorner.Parent = mainFrame
 
--- Hiển thị tên (ẩn bớt chữ)
+-- Hiển thị tên
 local nameLabel = Instance.new("TextLabel")
 nameLabel.Parent = mainFrame
 nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
@@ -52,7 +49,7 @@ nameLabel.BackgroundTransparency = 1
 nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 nameLabel.TextScaled = true
 nameLabel.Font = Enum.Font.GothamBold
-nameLabel.Text = "👤 Tên : " .. hideName(player.Name)
+nameLabel.Text = "👤 Tên: " .. player.Name
 
 -- Khung hiển thị đơn
 local jobFrame = Instance.new("Frame")
@@ -70,9 +67,9 @@ jobTitle.BackgroundTransparency = 1
 jobTitle.TextColor3 = Color3.fromRGB(255, 223, 88)
 jobTitle.TextScaled = true
 jobTitle.Font = Enum.Font.GothamBold
-jobTitle.Text = "📌 Đơn :"
+jobTitle.Text = "📌 Đơn:"
 
--- Ô sửa nội dung đơn
+-- Ô nhập đơn
 local jobBox = Instance.new("TextBox")
 jobBox.Parent = jobFrame
 jobBox.Size = UDim2.new(0.7, 0, 1, 0)
@@ -81,14 +78,16 @@ jobBox.BackgroundTransparency = 1
 jobBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 jobBox.TextScaled = true
 jobBox.Font = Enum.Font.GothamBold
-jobBox.Text = ""
 jobBox.ClearTextOnFocus = false
 jobBox.TextWrapped = true
 
--- Khi nhấn Enter, lưu vào Workspace
+-- Load dữ liệu từ Workspace nếu có
+jobBox.Text = savedData.Value or ""
+
+-- Khi nhấn Enter, lưu dữ liệu vào Workspace
 jobBox.FocusLost:Connect(function(enterPressed)
     if enterPressed and jobBox.Text ~= "" then
-        playerData.Value = jobBox.Text  -- Lưu vào StringValue trong Workspace
-        print("✅ Đã lưu đơn vào Workspace:", playerData.Value)
+        savedData.Value = jobBox.Text
+        print("✅ Đã lưu dữ liệu vào Workspace:", savedData.Value)
     end
 end)
